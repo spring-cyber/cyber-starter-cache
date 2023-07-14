@@ -1,4 +1,4 @@
-package com.cyber.infrastructure.extension;
+package com.cyber.cache.config;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alicp.jetcache.CacheValueHolder;

@@ -1,6 +1,5 @@
-package com.cyber.infrastructure.config;
+package com.cyber.cache.config;
 
-import com.cyber.infrastructure.extension.JsonSerialPolicy;
 import com.alicp.jetcache.anno.support.SpringConfigProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

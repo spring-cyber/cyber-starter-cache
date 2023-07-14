@@ -1,14 +1,10 @@
-package com.cyber.infrastructure.config;
-
+package com.cyber.cache.config;
 
 import com.cyber.domain.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -18,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -29,21 +25,28 @@ import java.time.Duration;
 import java.util.Objects;
 
 @Configuration
-@AutoConfigureAfter(RedisAutoConfiguration.class)
 @EnableCaching
+@AutoConfigureBefore(RedisAutoConfiguration.class)
 public class CacheConfig extends CachingConfigurerSupport {
 
-    public static final Logger LOGGING = LoggerFactory.getLogger(CacheConfig.class);
-
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory redisConnectionFactory) {
-        final RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setValueSerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new StringRedisSerializer());
+    @SuppressWarnings(value = { "unchecked", "rawtypes" })
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory)
+    {
+        RedisTemplate<Object, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        FastJson2JsonRedisSerializer serializer = new FastJson2JsonRedisSerializer(Object.class);
+
+        // 使用StringRedisSerializer来序列化和反序列化redis的key值
         template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+
+        // Hash的key也采用StringRedisSerializer的序列化方式
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setEnableTransactionSupport(true);
-        template.setConnectionFactory(redisConnectionFactory);
+        template.setHashValueSerializer(serializer);
+
+        template.afterPropertiesSet();
         return template;
     }
 
@@ -55,7 +58,7 @@ public class CacheConfig extends CachingConfigurerSupport {
             sb.append(obj.getClass().getName());
             for (Object arg : args) {
                 if (Objects.nonNull(arg) && !(arg instanceof Entity)) {
-                    sb.append(arg.toString());
+                    sb.append(arg);
                 }
             }
             return sb.toString();
@@ -63,7 +66,7 @@ public class CacheConfig extends CachingConfigurerSupport {
     }
 
     @Bean
-    public CacheManager cacheManager(LettuceConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisSerializer<String> redisSerializer = new StringRedisSerializer();
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
         ObjectMapper om = new ObjectMapper();
@@ -75,7 +78,7 @@ public class CacheConfig extends CachingConfigurerSupport {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer))
                 .disableCachingNullValues();
 
-        return RedisCacheManager.builder(redisConnectionFactory)
+        return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
                 .build();
     }
