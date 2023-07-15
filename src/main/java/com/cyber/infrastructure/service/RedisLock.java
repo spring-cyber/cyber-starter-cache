@@ -1,4 +1,4 @@
-package com.cyber.cache.service;
+package com.cyber.infrastructure.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,13 +8,12 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-@Component
+//@Component
 public class RedisLock {
 
     public static final Logger LOGGING = LoggerFactory.getLogger(RedisLock.class);

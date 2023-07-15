@@ -1,4 +1,4 @@
-package com.cyber.cache.config;
+package com.cyber.infrastructure.config;
 
 import com.alicp.jetcache.anno.support.SpringConfigProvider;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.cyber.cache.config;
+package com.cyber.infrastructure.config;
 
 import com.cyber.domain.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;

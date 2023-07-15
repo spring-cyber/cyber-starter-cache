@@ -1,4 +1,4 @@
-package com.cyber.cache.config;
+package com.cyber.infrastructure.config;
 
 public class JsonCacheObject<V> {
     private String className;
